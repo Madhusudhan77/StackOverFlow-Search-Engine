@@ -55,7 +55,7 @@ Building a search engine based on StackOverflow questions, the search results sh
 
 ### Experimentation
 
-1.Stacking the Sbert ,ELMO models And Universal sentence Encoder models
+1.Stacking the Sbert ,ELMO and Universal sentence Encoder models
 
 2.Combining the word embeddings from SBert ,ELMO model,USE and getting the Similar posts which is having semantic similarity with other Posts in the Dataset
 
