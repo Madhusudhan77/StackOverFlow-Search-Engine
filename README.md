@@ -46,7 +46,7 @@ Building a search engine based on StackOverflow questions, the search results sh
 
 ### Pretrained Models used in Case Study
 
-1.UniversalSentence Encoder
+1.Universal Sentence Encoder
 
 2.Sbert(Sentence transformers)
 
