@@ -5,6 +5,7 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_hub as hub
 from scipy import spatial
+from sentence_transformers import SentenceTransformer
 from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
@@ -15,8 +16,9 @@ Dataset_Raw =pd.read_csv(r'C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\Que
 USE_Model = tf.saved_model.load(r"C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\USE_Model")
 #Elmo_Model = tf.saved_model.load(r"C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\Elmo_Model")
 Elmo_Model = hub.KerasLayer("https://tfhub.dev/google/elmo/3")
-
-
+#SBert_Model=open(r"C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\SBert_Model\SBertModel.pkl","rb")
+#SBert=pickle.load(SBert_Model)
+SBert=SentenceTransformer('bert-base-nli-mean-tokens')
 
 kmeans_Model =open(r"C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\Cluster\KMeansModel.pkl","rb")
 kmeans =pickle.load(kmeans_Model)
@@ -112,6 +114,15 @@ USE_Question_Vectors =pickle.load(USE_Questions)
 USE_QuestionAndTitle=pickle.load(USE_QuestionAndTitle)
 
 
+#Loading SBertModel Dictionaries
+SBert_Title =open(r"C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\SBert_Model\SBert_Model_Title_dic_Vec.pkl","rb")
+SBert_Questions =open(r"C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\SBert_Model\SBert_Model_Question_dic_vec.pkl","rb")
+SBert_TitleAndQuestions=open(r"C:\Users\Reddivari Lalitha\Downloads\OwnCaseStudy\SBert_Model\SBert_Model_QAndT_dic_Vec.pkl","rb")
+SBert_Title_Vectors=pickle.load(SBert_Title)
+SBert_Question_Vectors =pickle.load(SBert_Questions)
+SBert_TitleAndQuestions_Vectors=pickle.load(SBert_TitleAndQuestions)
+
+
 
 print("Program is running and Loading of Models and Dictionaries  were complete")
 
@@ -135,6 +146,13 @@ def SemanticSimilarityScore(Sentence,Query_Vector,
     
     return SimilarityDict
 
+
+def SBert_SemanticScore(Sentence,ClusterPoints):
+    Query_Vector= np.asarray(SBert.encode(Sentence)).reshape(-1,1)
+    SBert_Dict=SemanticSimilarityScore(Sentence,Query_Vector,SBert_Title_Vectors,SBert_Question_Vectors,
+                                                                              SBert_TitleAndQuestions_Vectors
+                                                                             ,ClusterPoints,Title_Text_Dictionary,Question_Text_Dictionary)
+    return SBert_Dict
 
 
 def ELMO_SemanticScore(Sentence,ClusterPoints):
@@ -180,11 +198,11 @@ def SearchEngine(Sentence):
     #Calling Respective models and get semantic Scores
     Use_SimilarityDict=USE_SemanticScore(Sentence,ClusterPoints)
     ELOM_SimilarityDict=ELMO_SemanticScore(Sentence,ClusterPoints)
-
+    SBert_SimilarityDict=SBert_SemanticScore(Sentence,ClusterPoints)
     
     #Combining the similarity scores from all three pretrained models
-    for key in Use_SimilarityDict:
-        Final_SimilarScore_Dict[key]=Use_SimilarityDict[key]+(ELOM_SimilarityDict[key])
+    for key in SBert_SimilarityDict:
+        Final_SimilarScore_Dict[key]=Use_SimilarityDict[key]+(ELOM_SimilarityDict[key])+(SBert_SimilarityDict[key])
         
         
     #Retriving the top 10 Similar Titles and Questions Posts
